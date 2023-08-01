@@ -50,27 +50,28 @@ func (r *ProfileRepository) GetPasswordAndIDByUsername(ctx context.Context, user
 	if err != nil {
 		return uuid.Nil, nil, fmt.Errorf("ProfileRepository -> GetPasswordAndIDByUserName: %w", err)
 	}
-
 	return id, password, nil
 }
 
 // GetRefreshTokenByID returnes refreshToken from profiles table from excact row by id
-func (r *ProfileRepository) GetRefreshTokenByID(ctx context.Context, id uuid.UUID) (hashedRefresh string, err error) {
+func (r *ProfileRepository) GetRefreshTokenByID(ctx context.Context, id uuid.UUID) (hashedRefresh []byte, err error) {
 	err = r.pool.QueryRow(ctx, "SELECT refreshToken FROM profiles WHERE id = $1", id).Scan(&hashedRefresh)
 	if err != nil {
-		return "", fmt.Errorf("ProfileRepository -> GetRefreshTokenByName: %w", err)
+		return nil, fmt.Errorf("ProfileRepository -> GetRefreshTokenByName: %w", err)
 	}
 
 	return hashedRefresh, nil
 }
 
 // AddRefreshToken adds refreshToken to profiles table in excact row by id
-func (r *ProfileRepository) AddRefreshToken(ctx context.Context, refreshToken string, id uuid.UUID) error {
-	_, err := r.pool.Exec(ctx, "UPDATE prfoles SET refreshtoken = $1 WHERE id = $2", refreshToken, id)
+func (r *ProfileRepository) AddRefreshToken(ctx context.Context, refreshToken []byte, id uuid.UUID) error {
+	res, err := r.pool.Exec(ctx, "UPDATE profiles SET refreshtoken = $1 WHERE id = $2", refreshToken, id)
 	if err != nil {
 		return fmt.Errorf("ProfileRepository -> AddRefreshToken: %w", err)
 	}
-
+	if res.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
 	return nil
 }
 
