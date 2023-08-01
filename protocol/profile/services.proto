@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "github.com/distuurbia/profile/protocol";
+
+// message Share {
+//     string Name = 1;
+//     double Price = 2;
+// }
+
+// service ProfileService {
+//     rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse) {}
+//     rpc SignUpAdmin(SignUpAdminRequest) returns (SignUpAdminResponse) {}
+//     rpc GetByLogin(GetByLoginRequest) returns (GetByLoginResponse) {}
+//     rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
+// }
+
+// message SubscribeRequest {
+//     string UUID = 1;
+//     repeated string selectedShares = 2;
+// }
+
+// message SubscribeResponse {
+//     repeated Share shares = 1;
+// }
