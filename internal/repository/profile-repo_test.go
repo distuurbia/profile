@@ -8,37 +8,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSignUp(t *testing.T) {
-	err := r.SignUp(context.Background(), &testProfile)
+func TestCreateProfile(t *testing.T) {
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.NoError(t, err)
 }
 
-func TestSignUpNilID(t *testing.T) {
+func TestCreateProfileNilID(t *testing.T) {
 	testProfile.ID = uuid.Nil
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.Error(t, err)
 }
 
-func TestSignUpExistingID(t *testing.T) {
-	_ = r.SignUp(context.Background(), &testProfile)
+func TestCreateProfileExistingID(t *testing.T) {
+	_ = r.CreateProfile(context.Background(), &testProfile)
 	testProfile.Username = "Vova"
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.Error(t, err)
 }
 
-func TestSignUpExistingUsername(t *testing.T) {
+func TestCreateProfileExistingUsername(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Vladimir"
-	_ = r.SignUp(context.Background(), &testProfile)
+	_ = r.CreateProfile(context.Background(), &testProfile)
 	testProfile.ID = uuid.New()
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.Error(t, err)
 }
 
 func TestGetPasswordAndIDByUsername(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Volodya"
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.NoError(t, err)
 	testID, testPsw, err := r.GetPasswordAndIDByUsername(context.Background(), testProfile.Username)
 	require.NoError(t, err)
@@ -54,23 +54,22 @@ func TestGetPasswordAndIDByNotExistingUsername(t *testing.T) {
 func TestGetRefreshTokenByID(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Vlados"
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.NoError(t, err)
 	hashedRefresh, err := r.GetRefreshTokenByID(context.Background(), testProfile.ID)
 	require.NoError(t, err)
 	require.Equal(t, testProfile.RefreshToken, hashedRefresh)
 }
 
-func TestGetRefreshTokenByNotExistingID(t *testing.T){
+func TestGetRefreshTokenByNotExistingID(t *testing.T) {
 	_, err := r.GetRefreshTokenByID(context.Background(), uuid.New())
 	require.Error(t, err)
-
 }
 
-func TestAddRefreshToken(t *testing.T){
+func TestAddRefreshToken(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Vladlen"
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.NoError(t, err)
 
 	newRT := []byte("NewRT")
@@ -91,7 +90,7 @@ func TestAddRefreshTokenWithNotExistingID(t *testing.T) {
 func TestDeleteProfile(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Volodmir"
-	err := r.SignUp(context.Background(), &testProfile)
+	err := r.CreateProfile(context.Background(), &testProfile)
 	require.NoError(t, err)
 
 	err = r.DeleteProfile(context.Background(), testProfile.ID)
@@ -102,4 +101,3 @@ func TestDeleteProfileWithNotExistingID(t *testing.T) {
 	err := r.DeleteProfile(context.Background(), uuid.New())
 	require.Error(t, err)
 }
-

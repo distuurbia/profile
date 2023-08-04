@@ -1,24 +1,58 @@
 syntax = "proto3";
 
-option go_package = "github.com/distuurbia/profile/protocol";
+option go_package = "github.com/distuurbia/profile/protocol/profile";
 
-// message Share {
-//     string Name = 1;
-//     double Price = 2;
-// }
+message Profile {
+    int32 age = 1;
+    string id = 2;
+    string username = 3;
+    string country = 4;
+    bytes password = 5;
+    bytes refreshToken = 6;
+    
+}
 
-// service ProfileService {
-//     rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse) {}
-//     rpc SignUpAdmin(SignUpAdminRequest) returns (SignUpAdminResponse) {}
-//     rpc GetByLogin(GetByLoginRequest) returns (GetByLoginResponse) {}
-//     rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
-// }
+service ProfileService {
+    rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse) {}
+    rpc GetPasswordAndIDByUsername(GetPasswordAndIDByUsernameRequest) returns (GetPasswordAndIDByUsernameResponse) {}
+    rpc GetRefreshTokenByID(GetRefreshTokenByIDRequest) returns (GetRefreshTokenByIDResponse) {}
+    rpc AddRefreshToken(AddRefreshTokenRequest) returns (AddRefreshTokenResponse) {}
+    rpc DeleteProfile(DeleteProfileRequest) returns (DeleteProfileResponse) {}
+}
 
-// message SubscribeRequest {
-//     string UUID = 1;
-//     repeated string selectedShares = 2;
-// }
+message CreateProfileRequest {
+    Profile profile = 1;
+}
 
-// message SubscribeResponse {
-//     repeated Share shares = 1;
-// }
+message CreateProfileResponse {}
+
+message GetPasswordAndIDByUsernameRequest {
+    string username = 1;
+}
+
+message GetPasswordAndIDByUsernameResponse {
+    string id = 1;
+    bytes password = 2;
+}
+
+message GetRefreshTokenByIDRequest {
+    string id = 1;
+}
+
+message GetRefreshTokenByIDResponse {
+    bytes hashedRefresh = 1;
+}
+
+
+message AddRefreshTokenRequest {
+    bytes hashedRefresh = 1;
+    string id = 2;
+}
+
+message AddRefreshTokenResponse {}
+
+message DeleteProfileRequest {
+    string id = 1;
+}
+
+message DeleteProfileResponse {}

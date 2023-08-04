@@ -17,28 +17,28 @@ type ProfileRepository struct {
 }
 
 // NewProfileRepository creates an object of *ProfileRepository
-func NewProfileRepository(pool *pgxpool.Pool) *ProfileRepository{
+func NewProfileRepository(pool *pgxpool.Pool) *ProfileRepository {
 	return &ProfileRepository{pool: pool}
 }
 
-// SugnUp creates the row in db with fields of model.Profile
-func (r *ProfileRepository) SignUp(ctx context.Context, profile *model.Profile) error {
-	if profile.ID == uuid.Nil{
-		return fmt.Errorf("ProfileRepository -> SignUp -> error: failed to use uuid")
+// CreateProfile creates the row in db with fields of model.Profile
+func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *model.Profile) error {
+	if profile.ID == uuid.Nil {
+		return fmt.Errorf("ProfileRepository -> CreateProfile -> error: failed to use uuid")
 	}
 	var count int
 	err := r.pool.QueryRow(ctx, "SELECT COUNT(*) FROM profiles WHERE username = $1", profile.Username).Scan(&count)
 	if err != nil {
-		return fmt.Errorf("ProfileRepository -> SignUp -> QueryRow -> %w", err)
-	} 
+		return fmt.Errorf("ProfileRepository -> CreateProfile -> %w", err)
+	}
 	if count > 0 {
-		return fmt.Errorf("ProfileRepository -> SignUp -> QueryRow -> error: profile with such username already exists")
+		return fmt.Errorf("ProfileRepository -> CreateProfile -> QueryRow -> error: profile with such username already exists")
 	}
 
 	_, err = r.pool.Exec(ctx, "INSERT into profiles (id, username, password, refreshToken, country, age) VALUES($1, $2, $3, $4, $5, $6)",
 		profile.ID, profile.Username, profile.Password, profile.RefreshToken, profile.Country, profile.Age)
 	if err != nil {
-		return fmt.Errorf("ProfileRepository -> SignUp -> Exec -> %w", err)
+		return fmt.Errorf("ProfileRepository -> CreateProfile -> %w", err)
 	}
 
 	return nil
@@ -53,7 +53,7 @@ func (r *ProfileRepository) GetPasswordAndIDByUsername(ctx context.Context, user
 	return id, password, nil
 }
 
-// GetRefreshTokenByID returnes refreshToken from profiles table from excact row by id
+// GetRefreshTokenByID returnes refreshToken from profiles table from exact row by id
 func (r *ProfileRepository) GetRefreshTokenByID(ctx context.Context, id uuid.UUID) (hashedRefresh []byte, err error) {
 	err = r.pool.QueryRow(ctx, "SELECT refreshToken FROM profiles WHERE id = $1", id).Scan(&hashedRefresh)
 	if err != nil {
@@ -63,7 +63,7 @@ func (r *ProfileRepository) GetRefreshTokenByID(ctx context.Context, id uuid.UUI
 	return hashedRefresh, nil
 }
 
-// AddRefreshToken adds refreshToken to profiles table in excact row by id
+// AddRefreshToken adds refreshToken to profiles table in exact row by id
 func (r *ProfileRepository) AddRefreshToken(ctx context.Context, refreshToken []byte, id uuid.UUID) error {
 	res, err := r.pool.Exec(ctx, "UPDATE profiles SET refreshtoken = $1 WHERE id = $2", refreshToken, id)
 	if err != nil {
