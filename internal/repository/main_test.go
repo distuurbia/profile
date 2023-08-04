@@ -22,14 +22,14 @@ const (
 )
 
 var (
-	r *ProfileRepository
+	r           *ProfileRepository
 	testProfile = model.Profile{
-		ID: uuid.New(),
-		Username: "Vladimir",
-		Password: []byte("1234"),
+		ID:           uuid.New(),
+		Username:     "Vladimir",
+		Password:     []byte("1234"),
 		RefreshToken: []byte("someToken"),
-		Country: "Belarus",
-		Age: 27,
+		Country:      "Belarus",
+		Age:          27,
 	}
 )
 
