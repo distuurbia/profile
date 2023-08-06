@@ -23,9 +23,6 @@ func NewProfileRepository(pool *pgxpool.Pool) *ProfileRepository {
 
 // CreateProfile creates the row in db with fields of model.Profile
 func (r *ProfileRepository) CreateProfile(ctx context.Context, profile *model.Profile) error {
-	if profile.ID == uuid.Nil {
-		return fmt.Errorf("ProfileRepository -> CreateProfile -> error: failed to use uuid")
-	}
 	var count int
 	err := r.pool.QueryRow(ctx, "SELECT COUNT(*) FROM profiles WHERE username = $1", profile.Username).Scan(&count)
 	if err != nil {

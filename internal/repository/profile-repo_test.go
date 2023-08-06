@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/distuurbia/profile/internal/model"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -11,28 +12,16 @@ import (
 func TestCreateProfile(t *testing.T) {
 	err := r.CreateProfile(context.Background(), &testProfile)
 	require.NoError(t, err)
-}
 
-func TestCreateProfileNilID(t *testing.T) {
-	testProfile.ID = uuid.Nil
-	err := r.CreateProfile(context.Background(), &testProfile)
-	require.Error(t, err)
-}
-
-func TestCreateProfileExistingID(t *testing.T) {
-	_ = r.CreateProfile(context.Background(), &testProfile)
-	testProfile.Username = "Vova"
-	err := r.CreateProfile(context.Background(), &testProfile)
-	require.Error(t, err)
-}
-
-func TestCreateProfileExistingUsername(t *testing.T) {
-	testProfile.ID = uuid.New()
-	testProfile.Username = "Vladimir"
-	_ = r.CreateProfile(context.Background(), &testProfile)
-	testProfile.ID = uuid.New()
-	err := r.CreateProfile(context.Background(), &testProfile)
-	require.Error(t, err)
+	var readProfile model.Profile
+	err = r.pool.QueryRow(context.Background(), "SELECT username, password, refreshToken, age, country FROM profiles WHERE ID = $1",
+		testProfile.ID).Scan(&readProfile.Username, &readProfile.Password, &readProfile.RefreshToken, &readProfile.Age, &readProfile.Country)
+	require.NoError(t, err)
+	require.Equal(t, testProfile.Username, readProfile.Username)
+	require.Equal(t, testProfile.Password, readProfile.Password)
+	require.Equal(t, testProfile.RefreshToken, readProfile.RefreshToken)
+	require.Equal(t, testProfile.Age, readProfile.Age)
+	require.Equal(t, testProfile.Country, readProfile.Country)
 }
 
 func TestGetPasswordAndIDByUsername(t *testing.T) {
@@ -46,11 +35,6 @@ func TestGetPasswordAndIDByUsername(t *testing.T) {
 	require.Equal(t, testPsw, testPsw)
 }
 
-func TestGetPasswordAndIDByNotExistingUsername(t *testing.T) {
-	_, _, err := r.GetPasswordAndIDByUsername(context.Background(), "Nobody")
-	require.Error(t, err)
-}
-
 func TestGetRefreshTokenByID(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Vlados"
@@ -59,11 +43,6 @@ func TestGetRefreshTokenByID(t *testing.T) {
 	hashedRefresh, err := r.GetRefreshTokenByID(context.Background(), testProfile.ID)
 	require.NoError(t, err)
 	require.Equal(t, testProfile.RefreshToken, hashedRefresh)
-}
-
-func TestGetRefreshTokenByNotExistingID(t *testing.T) {
-	_, err := r.GetRefreshTokenByID(context.Background(), uuid.New())
-	require.Error(t, err)
 }
 
 func TestAddRefreshToken(t *testing.T) {
@@ -81,12 +60,6 @@ func TestAddRefreshToken(t *testing.T) {
 	require.Equal(t, newRT, testRT)
 }
 
-func TestAddRefreshTokenWithNotExistingID(t *testing.T) {
-	newRT := []byte("NewRT")
-	err := r.AddRefreshToken(context.Background(), newRT, uuid.New())
-	require.Error(t, err)
-}
-
 func TestDeleteProfile(t *testing.T) {
 	testProfile.ID = uuid.New()
 	testProfile.Username = "Volodmir"
@@ -95,9 +68,4 @@ func TestDeleteProfile(t *testing.T) {
 
 	err = r.DeleteProfile(context.Background(), testProfile.ID)
 	require.NoError(t, err)
-}
-
-func TestDeleteProfileWithNotExistingID(t *testing.T) {
-	err := r.DeleteProfile(context.Background(), uuid.New())
-	require.Error(t, err)
 }

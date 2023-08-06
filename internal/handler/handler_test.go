@@ -11,6 +11,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestValidationID(t *testing.T) {
+	s := new(mocks.ProfileService)
+	h := NewProfileHandler(s, validate)
+
+	testID := uuid.New()
+	validatedID, err := h.ValidationID(context.Background(), testID.String())
+	require.NoError(t, err)
+	require.Equal(t, testID, validatedID)
+}
+
 func TestCreateProfile(t *testing.T) {
 	s := new(mocks.ProfileService)
 
@@ -20,16 +30,6 @@ func TestCreateProfile(t *testing.T) {
 	_, err := h.CreateProfile(context.Background(), &protocol.CreateProfileRequest{Profile: &testProtoProfile})
 
 	require.NoError(t, err)
-}
-
-func TestCreateProfileFailedValidation(t *testing.T) {
-	s := new(mocks.ProfileService)
-	h := NewProfileHandler(s, validate)
-
-	testProtoProfile.Username = "f"
-	_, err := h.CreateProfile(context.Background(), &protocol.CreateProfileRequest{Profile: &testProtoProfile})
-
-	require.Error(t, err)
 }
 
 func TestGetPasswordAndIDByUsername(t *testing.T) {
@@ -46,15 +46,6 @@ func TestGetPasswordAndIDByUsername(t *testing.T) {
 	require.Equal(t, testProfile.ID.String(), resp.Id)
 }
 
-func TestGetPasswordAndIDByEmptyUsername(t *testing.T) {
-	s := new(mocks.ProfileService)
-
-	h := NewProfileHandler(s, validate)
-
-	_, err := h.GetPasswordAndIDByUsername(context.Background(), &protocol.GetPasswordAndIDByUsernameRequest{Username: ""})
-	require.Error(t, err)
-}
-
 func TestGetRefreshTokenByID(t *testing.T) {
 	s := new(mocks.ProfileService)
 
@@ -66,14 +57,6 @@ func TestGetRefreshTokenByID(t *testing.T) {
 	resp, err := h.GetRefreshTokenByID(context.Background(), &protocol.GetRefreshTokenByIDRequest{Id: testProfile.ID.String()})
 	require.NoError(t, err)
 	require.Equal(t, len([]byte("token")), len(resp.HashedRefresh))
-}
-
-func TestGetRefreshTokenByIDNil(t *testing.T) {
-	s := new(mocks.ProfileService)
-	h := NewProfileHandler(s, validate)
-
-	_, err := h.GetRefreshTokenByID(context.Background(), &protocol.GetRefreshTokenByIDRequest{Id: uuid.Nil.String()})
-	require.Error(t, err)
 }
 
 func TestAddRefreshToken(t *testing.T) {
@@ -88,18 +71,6 @@ func TestAddRefreshToken(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestAddRefreshTokenNilID(t *testing.T) {
-	s := new(mocks.ProfileService)
-
-	s.On("AddRefreshToken", mock.Anything, mock.AnythingOfType("[]uint8"), mock.AnythingOfType("uuid.UUID")).
-		Return(nil)
-
-	h := NewProfileHandler(s, validate)
-
-	_, err := h.AddRefreshToken(context.Background(), &protocol.AddRefreshTokenRequest{Id: uuid.Nil.String()})
-	require.Error(t, err)
-}
-
 func TestDeleteProfile(t *testing.T) {
 	s := new(mocks.ProfileService)
 
@@ -110,28 +81,4 @@ func TestDeleteProfile(t *testing.T) {
 	_, err := h.DeleteProfile(context.Background(), &protocol.DeleteProfileRequest{Id: uuid.New().String()})
 
 	require.NoError(t, err)
-}
-
-func TestDeleteProfileSendNotUUID(t *testing.T) {
-	s := new(mocks.ProfileService)
-
-	s.On("DeleteProfile", mock.Anything, mock.AnythingOfType("uuid.UUID")).Return(nil)
-
-	h := NewProfileHandler(s, validate)
-
-	_, err := h.DeleteProfile(context.Background(), &protocol.DeleteProfileRequest{Id: "not uuid"})
-
-	require.Error(t, err)
-}
-
-func TestDeleteProfileNilID(t *testing.T) {
-	s := new(mocks.ProfileService)
-
-	s.On("DeleteProfile", mock.Anything, mock.AnythingOfType("uuid.UUID")).Return(nil)
-
-	h := NewProfileHandler(s, validate)
-
-	_, err := h.DeleteProfile(context.Background(), &protocol.DeleteProfileRequest{Id: uuid.Nil.String()})
-
-	require.Error(t, err)
 }

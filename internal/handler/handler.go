@@ -74,8 +74,8 @@ func (h *ProfileHandler) GetPasswordAndIDByUsername(ctx context.Context, req *pr
 	id, password, err := h.s.GetPasswordAndIDByUsername(ctx, req.Username)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"Login": req.Username,
-		}).Errorf("ProfileHandler -> Login -> %v", err)
+			"Username": req.Username,
+		}).Errorf("ProfileHandler -> GetPasswordAndIDByUsername -> %v", err)
 		return &protocol.GetPasswordAndIDByUsernameResponse{}, nil
 	}
 	return &protocol.GetPasswordAndIDByUsernameResponse{Id: id.String(), Password: password}, nil
@@ -138,7 +138,7 @@ func (h *ProfileHandler) AddRefreshToken(ctx context.Context, req *protocol.AddR
 func (h *ProfileHandler) DeleteProfile(ctx context.Context, req *protocol.DeleteProfileRequest) (*protocol.DeleteProfileResponse, error) {
 	profileID, err := h.ValidationID(ctx, req.Id)
 	if err != nil {
-		logrus.Errorf("ProfileHandler -> AddRefreshToken %v", err)
+		logrus.Errorf("ProfileHandler -> DeleteProfile %v", err)
 		return &protocol.DeleteProfileResponse{}, err
 	}
 	err = h.s.DeleteProfile(ctx, profileID)
