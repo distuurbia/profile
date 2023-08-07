@@ -35,14 +35,19 @@ func NewProfileHandler(s ProfileService, validate *validator.Validate) *ProfileH
 
 // CreateProfile validates fields of the request and send them to the service
 func (h *ProfileHandler) CreateProfile(ctx context.Context, req *protocol.CreateProfileRequest) (*protocol.CreateProfileResponse, error) {
+	parsedID, err := uuid.Parse(req.Profile.Id)
+	if err != nil {
+		logrus.Errorf("ProfileHandler -> CreateProfile -> %v", err)
+		return &protocol.CreateProfileResponse{}, err
+	}
 	var profile = model.Profile{
-		ID:       uuid.New(),
+		ID:       parsedID,
 		Age:      req.Profile.Age,
 		Country:  req.Profile.Country,
 		Username: req.Profile.Username,
 		Password: req.Profile.Password,
 	}
-	err := h.validate.StructCtx(ctx, profile)
+	err = h.validate.StructCtx(ctx, profile)
 	if err != nil {
 		logrus.Errorf("ProfileHandler -> CreateProfile -> %v", err)
 		return &protocol.CreateProfileResponse{}, err
