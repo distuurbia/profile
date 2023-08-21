@@ -16,7 +16,7 @@ func TestValidationID(t *testing.T) {
 	h := NewProfileHandler(s, validate)
 
 	testID := uuid.New()
-	validatedID, err := h.ValidationID(context.Background(), testID.String())
+	validatedID, err := h.validationID(context.Background(), testID.String())
 	require.NoError(t, err)
 	require.Equal(t, testID, validatedID)
 }
